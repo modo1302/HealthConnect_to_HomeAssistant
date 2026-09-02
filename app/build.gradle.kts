@@ -8,7 +8,9 @@ plugins {
 
 val keystorePropertiesFile = rootProject.file("app/keystore/keystore.properties")
 val keystoreProperties = Properties()
-keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 
 android {
     signingConfigs {
@@ -46,7 +48,9 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             applicationIdSuffix = ".debug"
-            signingConfig = signingConfigs["release"]
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs["release"]
+            }
         }
     }
     compileOptions {
