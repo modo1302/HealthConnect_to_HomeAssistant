@@ -19,6 +19,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import me.ayra.ha.healthconnect.ForegroundService
 import me.ayra.ha.healthconnect.R
+import me.ayra.ha.healthconnect.SyncWorker
 import me.ayra.ha.healthconnect.data.DEFAULT_SYNC_DAYS
 import me.ayra.ha.healthconnect.data.MAX_SYNC_DAYS
 import me.ayra.ha.healthconnect.data.MIN_SYNC_DAYS
@@ -74,23 +75,30 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val context = context ?: return@setOnPreferenceChangeListener false
 
             if (enabled) {
-                if (!hasNotificationPermission()) {
-                    if (requiresNotificationPermission()) {
-                        requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-                    return@setOnPreferenceChangeListener false
-                }
-
-                context.setForegroundServiceEnabled(true)
-                val serviceIntent = Intent(context.applicationContext, ForegroundService::class.java)
-                ContextCompat.startForegroundService(context.applicationContext, serviceIntent)
+                enableForegroundService()
             } else {
                 context.setForegroundServiceEnabled(false)
                 ForegroundService.stopService(context)
+                true
             }
-
-            true
         }
+    }
+
+    private fun enableForegroundService(): Boolean {
+        val context = context ?: return false
+
+        if (!hasNotificationPermission()) {
+            if (requiresNotificationPermission()) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            return false
+        }
+
+        context.setForegroundServiceEnabled(true)
+        val serviceIntent = Intent(context.applicationContext, ForegroundService::class.java)
+        ContextCompat.startForegroundService(context.applicationContext, serviceIntent)
+        findPreference<SwitchPreferenceCompat>("foregroundService")?.isChecked = true
+        return true
     }
 
     private fun setupIntervalPreference() {
@@ -111,10 +119,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     val selectedValue = values.getOrNull(which) ?: return@setItems
                     context?.setSettings("updateInterval", selectedValue)
                     intervalPreference.summary = selectedLabel
+
+                    val context = context ?: return@setItems
+                    if ((selectedValue.toLongOrNull() ?: 0L) < SyncWorker.MINIMUM_INTERVAL &&
+                        !context.getForegroundServiceEnabled()
+                    ) {
+                        promptEnableForegroundServiceForFastSync()
+                    }
                 }.setNegativeButton(R.string.cancel, null)
                 .show()
             true
         }
+    }
+
+    private fun promptEnableForegroundServiceForFastSync() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.fast_sync_service_dialog_title)
+            .setMessage(R.string.fast_sync_service_dialog_message)
+            .setPositiveButton(R.string.allow) { _, _ -> enableForegroundService() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun setupSyncDaysPreference() {

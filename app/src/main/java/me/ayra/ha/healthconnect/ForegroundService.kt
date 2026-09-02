@@ -14,12 +14,21 @@ import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import me.ayra.ha.healthconnect.data.Settings.getAutoSync
 import me.ayra.ha.healthconnect.data.Settings.getForegroundServiceEnabled
+import me.ayra.ha.healthconnect.data.Settings.getSettings
 
 class ForegroundService : Service() {
     companion object {
         const val CHANNEL_ID = "ForegroundServiceChannel"
         const val NOTIFICATION_ID = 1
+        private const val SETTINGS_POLL_INTERVAL_MS = 60_000L
 
         fun Context.runServiceIfEnabled() {
             if (getForegroundServiceEnabled()) {
@@ -35,6 +44,9 @@ class ForegroundService : Service() {
             appContext.stopService(stopIntent)
         }
     }
+
+    private val serviceScope = CoroutineScope(SupervisorJob())
+    private var syncJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -85,6 +97,8 @@ class ForegroundService : Service() {
             startForeground(NOTIFICATION_ID, notification)
         }
 
+        startSyncLoop()
+
         return START_STICKY
     }
 
@@ -92,7 +106,31 @@ class ForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        syncJob?.cancel()
         stopForeground(true)
+    }
+
+    private fun startSyncLoop() {
+        if (syncJob?.isActive == true) return
+        syncJob =
+            serviceScope.launch {
+                while (isActive) {
+                    val intervalSeconds =
+                        applicationContext.getSettings("updateInterval")?.toLongOrNull()
+                            ?: SyncWorker.DEFAULT_INTERVAL
+
+                    if (intervalSeconds < SyncWorker.MINIMUM_INTERVAL) {
+                        delay(intervalSeconds.coerceAtLeast(SyncWorker.MINIMUM_FAST_INTERVAL) * 1000L)
+                        if (applicationContext.getAutoSync() != false) {
+                            SyncWorker.startNow(applicationContext)
+                        }
+                    } else {
+                        // WorkManager already covers intervals at or above its floor; just
+                        // watch for the user switching to a faster interval later.
+                        delay(SETTINGS_POLL_INTERVAL_MS)
+                    }
+                }
+            }
     }
 
     private fun createNotificationChannel() {

@@ -106,6 +106,8 @@
     <string name="crash_dialog_clipboard_label">Crash log</string>
 
     <string-array name="sync_intervals">
+        <item>1 minute</item>
+        <item>5 minutes</item>
         <item>15 minutes</item>
         <item>30 minutes</item>
         <item>1 hour</item>
@@ -117,6 +119,8 @@
     </string-array>
 
     <string-array name="sync_time">
+        <item>60</item>
+        <item>300</item>
         <item>900</item>
         <item>1800</item>
         <item>3600</item>
@@ -126,6 +130,9 @@
         <item>43200</item>
         <item>86400</item>
     </string-array>
+
+    <string name="fast_sync_service_dialog_title">Enable background sync service</string>
+    <string name="fast_sync_service_dialog_message">Intervals under 15 minutes go around an Android limit by using a persistent foreground service to trigger syncs on time. This keeps a low-priority notification visible while auto sync is on.</string>
 
     <plurals name="sync_days_summary">
         <item quantity="one">Sync the last %d day</item>

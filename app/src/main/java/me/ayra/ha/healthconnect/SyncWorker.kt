@@ -48,7 +48,11 @@ class SyncWorker(
     companion object {
         private const val TAG = "SyncWorker"
         const val DEFAULT_INTERVAL = 3600L
+
+        // WorkManager silently clamps PeriodicWorkRequest to this floor (Android OS limit),
+        // so it can't be used for shorter intervals — those go through ForegroundService instead.
         const val MINIMUM_INTERVAL = 15 * 60L
+        const val MINIMUM_FAST_INTERVAL = 60L
         private const val MAX_RETRY_ATTEMPTS = 3
         private const val FOREGROUND_CHANNEL_ID = "health_data_sync"
         private const val FOREGROUND_NOTIFICATION_ID = 1001
