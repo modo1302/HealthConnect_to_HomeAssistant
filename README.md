@@ -1,5 +1,7 @@
 # Health Connect to Home Assistant
 
+> This is a fork of [AyraHikari/HealthConnect_to_HomeAssistant](https://github.com/AyraHikari/HealthConnect_to_HomeAssistant), created by [Ayra Hikari](https://github.com/AyraHikari). All credit for the original app goes to them — this fork adds a few personal tweaks on top.
+
 Easily export your Health Connect data to Home Assistant and visualize it with beautiful charts.
 
 <p align="center">
