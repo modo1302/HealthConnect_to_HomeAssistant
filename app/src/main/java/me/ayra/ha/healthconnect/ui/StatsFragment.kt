@@ -492,7 +492,12 @@ class StatsFragment : Fragment() {
 
         val accumulator = SleepAccumulator()
 
-        sessions.forEach { session ->
+        // Multiple sources (phone, watch, band) can each write their own overlapping
+        // session for the same night. Summing every session's duration double-counts
+        // that overlap, so we merge them into the union of covered time instead.
+        var mergedCoverageEnd: Long? = null
+
+        sessions.sortedBy { it.startTime.epochSecond }.forEach { session ->
             val sessionStart = session.startTime.epochSecond
             val sessionEnd = session.endTime.epochSecond
             val duration = (sessionEnd - sessionStart).coerceAtLeast(0L)
@@ -501,7 +506,10 @@ class StatsFragment : Fragment() {
             accumulator.start =
                 accumulator.start?.let { minOf(it, sessionStart) } ?: sessionStart
             accumulator.end = accumulator.end?.let { maxOf(it, sessionEnd) } ?: sessionEnd
-            accumulator.totalDuration += duration
+
+            val newCoverageStart = maxOf(sessionStart, mergedCoverageEnd ?: sessionStart)
+            accumulator.totalDuration += (sessionEnd - newCoverageStart).coerceAtLeast(0L)
+            mergedCoverageEnd = maxOf(mergedCoverageEnd ?: sessionEnd, sessionEnd)
 
             session.stages.forEach { stage ->
                 val startEpochSecond = stage.startTime.epochSecond
