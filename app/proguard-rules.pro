@@ -21,9 +21,18 @@
 #-renamesourcefileattribute SourceFile
 
 # Keep Kotlin metadata so that reflection based serializers (Jackson, Moshi, etc.)
-# can continue to discover data class properties in release builds.
+# can continue to discover data class properties in release builds. Keeping the
+# kotlin.Metadata class alone isn't enough — R8 still strips the actual @Metadata
+# annotation values from every other class's bytecode unless annotation attributes
+# are explicitly kept, which is what jackson-module-kotlin reads via kotlin-reflect
+# to find a data class's constructor/properties.
 -keep class kotlin.Metadata { *; }
+-keepattributes *Annotation*, InnerClasses, EnclosingMethod, Signature
+
+-keep class kotlin.reflect.jvm.internal.** { *; }
+-dontwarn kotlin.reflect.jvm.internal.**
 
 # Preserve the Health Connect data models that are cached via Jackson so the
 # generated JSON keeps the expected field names.
 -keep class me.ayra.ha.healthconnect.data.** { *; }
+-keepclassmembers class me.ayra.ha.healthconnect.data.** { *; }
