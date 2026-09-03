@@ -28,6 +28,7 @@ Easily export your Health Connect data to Home Assistant and visualize it with b
 
 ## Download
 
+- [Download latest APK from GitHub Releases](https://github.com/modo1302/HealthConnect_to_HomeAssistant/releases/latest)
 - [Download from Pling](https://www.pling.com/p/2281233/)
 - [Download from Linux Apps Store](https://www.linux-apps.com/p/2281233/)
 - [Download from KDE Store](https://www.linux-apps.com/p/2281233/)
