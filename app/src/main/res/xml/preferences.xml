@@ -11,6 +11,11 @@
             android:icon="@drawable/ic_today_24px"
             android:title="@string/sync_days_title" />
 
+        <Preference
+            android:key="stepsGoal"
+            android:icon="@drawable/ic_fitness_tracker_24px"
+            android:title="@string/steps_goal_title" />
+
         <SwitchPreferenceCompat
             android:key="foregroundService"
             android:icon="@drawable/ic_sync_24px"

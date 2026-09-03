@@ -81,9 +81,13 @@
     <string name="sensor_hint">sensor.health_connect</string>
     <string name="sync_days_title">Days of data to sync</string>
     <string name="sync_days_hint">Enter the number of days to include (1–30)</string>
+    <string name="steps_goal_title">Daily steps goal</string>
+    <string name="steps_goal_hint">Enter your daily steps goal (1,000–100,000)</string>
+    <string name="steps_goal_summary">%s steps</string>
     <string name="error_field_required">This field is required</string>
     <string name="error_invalid_sensor_format">Only letters, numbers and underscores allowed</string>
     <string name="error_invalid_sync_days">Enter a value between %1$d and %2$d</string>
+    <string name="error_invalid_steps_goal">Enter a value between %1$d and %2$d</string>
     <string name="version_format">%s</string>
     <string name="version_unknown">Version unknown</string>
     <string name="error_no_browser">No browser app found</string>

@@ -15,19 +15,25 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.text.NumberFormat
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import me.ayra.ha.healthconnect.ForegroundService
 import me.ayra.ha.healthconnect.R
 import me.ayra.ha.healthconnect.SyncWorker
 import me.ayra.ha.healthconnect.data.DEFAULT_SYNC_DAYS
+import me.ayra.ha.healthconnect.data.DEFAULT_STEPS_GOAL
+import me.ayra.ha.healthconnect.data.MAX_STEPS_GOAL
 import me.ayra.ha.healthconnect.data.MAX_SYNC_DAYS
+import me.ayra.ha.healthconnect.data.MIN_STEPS_GOAL
 import me.ayra.ha.healthconnect.data.MIN_SYNC_DAYS
 import me.ayra.ha.healthconnect.data.Settings.getForegroundServiceEnabled
 import me.ayra.ha.healthconnect.data.Settings.getSettings
+import me.ayra.ha.healthconnect.data.Settings.getStepsGoal
 import me.ayra.ha.healthconnect.data.Settings.getSyncDays
 import me.ayra.ha.healthconnect.data.Settings.setForegroundServiceEnabled
 import me.ayra.ha.healthconnect.data.Settings.setSettings
+import me.ayra.ha.healthconnect.data.Settings.setStepsGoal
 import me.ayra.ha.healthconnect.data.Settings.setSyncDays
 import me.ayra.ha.healthconnect.utils.AppUtils.openUrlInBrowser
 import me.ayra.ha.healthconnect.utils.UiUtils.navigate
@@ -53,6 +59,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         setupIntervalPreference()
         setupSyncDaysPreference()
+        setupStepsGoalPreference()
         setupForegroundServicePreference()
         setupUrlPreference()
         setupTokenPreference()
@@ -150,6 +157,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
             showInputDialog("syncDays", getString(R.string.sync_days_title), currentDays.toString())
             true
         }
+    }
+
+    private fun setupStepsGoalPreference() {
+        val stepsGoalPreference = findPreference<Preference>("stepsGoal") ?: return
+        updateStepsGoalSummary()
+
+        stepsGoalPreference.setOnPreferenceClickListener {
+            val currentGoal = context?.getStepsGoal() ?: DEFAULT_STEPS_GOAL
+            showInputDialog("stepsGoal", getString(R.string.steps_goal_title), currentGoal.toString())
+            true
+        }
+    }
+
+    private fun updateStepsGoalSummary() {
+        val goal = context?.getStepsGoal() ?: DEFAULT_STEPS_GOAL
+        findPreference<Preference>("stepsGoal")?.summary =
+            getString(R.string.steps_goal_summary, NumberFormat.getIntegerInstance().format(goal))
     }
 
     private fun setupUrlPreference() {
@@ -260,6 +284,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         hint = getString(R.string.sync_days_hint)
                         inputType = InputType.TYPE_CLASS_NUMBER
                     }
+                    "stepsGoal" -> {
+                        hint = getString(R.string.steps_goal_hint)
+                        inputType = InputType.TYPE_CLASS_NUMBER
+                    }
                 }
             }
 
@@ -309,6 +337,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
                         context.setSyncDays(days)
                         updateSyncDaysSummary()
+                        dialog.dismiss()
+                    }
+                    key == "stepsGoal" -> {
+                        val goal = newValue.toIntOrNull()
+                        if (goal == null || goal !in MIN_STEPS_GOAL..MAX_STEPS_GOAL) {
+                            inputLayout.error =
+                                getString(R.string.error_invalid_steps_goal, MIN_STEPS_GOAL, MAX_STEPS_GOAL)
+                            return@setOnClickListener
+                        }
+
+                        context.setStepsGoal(goal)
+                        updateStepsGoalSummary()
                         dialog.dismiss()
                     }
                     else -> {

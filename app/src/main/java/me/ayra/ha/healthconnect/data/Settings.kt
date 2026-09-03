@@ -11,6 +11,9 @@ const val DATA = "DATA"
 const val MIN_SYNC_DAYS = 1L
 const val MAX_SYNC_DAYS = 30L
 const val DEFAULT_SYNC_DAYS = 7L
+const val MIN_STEPS_GOAL = 1_000
+const val MAX_STEPS_GOAL = 100_000
+const val DEFAULT_STEPS_GOAL = 5_000
 
 object Settings {
     data class SyncError(
@@ -77,5 +80,15 @@ object Settings {
     fun Context.setSyncDays(value: Long) {
         val sanitizedValue = value.coerceIn(MIN_SYNC_DAYS, MAX_SYNC_DAYS)
         setSettings("syncDays", sanitizedValue.toString())
+    }
+
+    fun Context.getStepsGoal(): Int {
+        val storedValue = getSettings("stepsGoal")?.toIntOrNull()
+        return storedValue?.coerceIn(MIN_STEPS_GOAL, MAX_STEPS_GOAL) ?: DEFAULT_STEPS_GOAL
+    }
+
+    fun Context.setStepsGoal(value: Int) {
+        val sanitizedValue = value.coerceIn(MIN_STEPS_GOAL, MAX_STEPS_GOAL)
+        setSettings("stepsGoal", sanitizedValue.toString())
     }
 }

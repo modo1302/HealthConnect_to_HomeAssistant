@@ -24,8 +24,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.ayra.ha.healthconnect.R
+import me.ayra.ha.healthconnect.data.DEFAULT_STEPS_GOAL
 import me.ayra.ha.healthconnect.data.DEFAULT_SYNC_DAYS
 import me.ayra.ha.healthconnect.data.HeartRateSample
+import me.ayra.ha.healthconnect.data.Settings.getStepsGoal
 import me.ayra.ha.healthconnect.data.Settings.getSyncDays
 import me.ayra.ha.healthconnect.data.SleepStageDuration
 import me.ayra.ha.healthconnect.data.SleepStageSession
@@ -60,7 +62,6 @@ class StatsFragment : Fragment() {
     }
 
     private companion object {
-        private const val STEPS_GOAL = 5_000
         private const val AVERAGE_STEP_LENGTH_METERS = 0.762
         private const val CALORIES_PER_STEP = 0.04
         private const val MAX_HEART_RATE_CHART_POINTS = 40
@@ -250,7 +251,7 @@ class StatsFragment : Fragment() {
     private fun buildStepsItem(stepsStats: StepsStats): StatsUiModel.Steps? {
         if (stepsStats.totalSteps <= 0L) return null
 
-        val goal = stepsStats.goal.takeIf { it > 0 } ?: STEPS_GOAL
+        val goal = stepsStats.goal.takeIf { it > 0 } ?: (context?.getStepsGoal() ?: DEFAULT_STEPS_GOAL)
         val totalSteps = stepsStats.totalSteps
 
         val stepCountText =
@@ -373,7 +374,7 @@ class StatsFragment : Fragment() {
             totalSteps = totalSteps,
             distanceKilometers = distance,
             caloriesBurned = calories,
-            goal = STEPS_GOAL,
+            goal = context?.getStepsGoal() ?: DEFAULT_STEPS_GOAL,
             timeline = timeline,
         )
     }
