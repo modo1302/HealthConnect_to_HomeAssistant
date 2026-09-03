@@ -1,4 +1,4 @@
-package me.ayra.ha.healthconnect.ui
+﻿package me.ayra.ha.healthconnect.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -98,17 +98,7 @@ class HomeFragment : Fragment() {
                 requestPermissions.launch(healthConnectPermissions)
             }
 
-            val lastSyncSaved = context?.getLastSync() ?: 0
-            lastSync.text =
-                getString(R.string.last_sync).format(
-                    if (lastSyncSaved <=
-                        0
-                    ) {
-                        getString(R.string.never)
-                    } else {
-                        lastSyncSaved.toDate("dd/MM/yyyy HH.mm")
-                    },
-                )
+            updateLastSyncLabel()
 
             val labels = resources.getStringArray(R.array.sync_intervals)
             val values = resources.getStringArray(R.array.sync_time)
@@ -155,14 +145,13 @@ class HomeFragment : Fragment() {
                                 context?.let { SyncWidgetProvider.updateAllWidgets(it) }
                                 errorMessage.visibility = View.GONE
                                 sync.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_arrow_downward_24px))
-                                lastSync.text =
-                                    getString(R.string.last_sync).format((context?.getLastSync() ?: 0).toDate("dd/MM/yyyy HH.mm"))
+                                updateLastSyncLabel()
                                 showSuccess(getString(R.string.sync_success))
                                 context?.removeLastError()
                             } else {
                                 sync.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_error_24px))
                                 errorMessage.apply {
-                                    text = getString(R.string.error_time).format(unixTimeMs.toDate("dd/MM/yyyy HH.mm"), message)
+                                    text = getString(R.string.error_time).format(unixTimeMs.toDate("dd/MM/yyyy HH:mm"), message)
                                     visibility = View.VISIBLE
                                 }
                                 showError(getString(R.string.ha_error).format(message))
@@ -189,8 +178,21 @@ class HomeFragment : Fragment() {
             SyncWorker.schedule(requireContext())
             isSettingsUpdate = false
         }
+        updateLastSyncLabel()
         checkHcPermission()
         checkLastError()
+    }
+
+    private fun updateLastSyncLabel() {
+        val lastSyncSaved = context?.getLastSync() ?: 0
+        binding.lastSync.text =
+            getString(R.string.last_sync).format(
+                if (lastSyncSaved <= 0) {
+                    getString(R.string.never)
+                } else {
+                    lastSyncSaved.toDate("dd/MM/yyyy HH:mm")
+                },
+            )
     }
 
     private fun checkLastError() {
@@ -200,7 +202,7 @@ class HomeFragment : Fragment() {
                 binding.apply {
                     sync.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_error_24px))
                     errorMessage.apply {
-                        text = getString(R.string.error_time).format(unixTimeMs.toDate("dd/MM/yyyy HH.mm"), lastError.message)
+                        text = getString(R.string.error_time).format(unixTimeMs.toDate("dd/MM/yyyy HH:mm"), lastError.message)
                         visibility = View.VISIBLE
                     }
                     haError.isVisible = true
